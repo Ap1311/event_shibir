@@ -1,0 +1,9 @@
+2025-10-23 15:23:33.179 +0530 [INFO]: Server started on port 3000
+2025-10-23 15:24:07.576 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-23 15:24:07.758 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-23 15:24:39.268 +0530 [WARN]: Unauthorized access attempt to /.env from IP: 2405:201:2010:a959:1906:4590:5111:4d0f
+2025-10-23 15:24:41.160 +0530 [WARN]: Unauthorized access attempt to /.env from IP: 2405:201:2010:a959:1906:4590:5111:4d0f
+2025-10-23 15:24:41.456 +0530 [WARN]: Unauthorized access attempt to /.env from IP: 2405:201:2010:a959:1906:4590:5111:4d0f
+2025-10-23 15:27:15.897 +0530 [INFO]: Admin: admin3, IP: 2405:201:2010:a959:5c7d:9f98:b8a6:9090, Action: Logged In
+2025-10-23 15:28:41.942 +0530 [WARN]: Login Failed: Username 'admin' not found. IP: 2405:201:2010:a959:1906:4590:5111:4d0f
+2025-10-23 15:28:49.953 +0530 [INFO]: Admin: admin1, IP: 2405:201:2010:a959:1906:4590:5111:4d0f, Action: Logged In
