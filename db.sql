@@ -1,4 +1,3 @@
-
 CREATE DATABASE IF NOT EXISTS event_manager;
 
 
@@ -21,6 +20,7 @@ CREATE TABLE IF NOT EXISTS `points_log` (
   `candidate_uid` INT(11) NOT NULL,
   `points` INT(11) NOT NULL,
   `reason` VARCHAR(255) NOT NULL,
+  `admin_username` VARCHAR(50) NULL DEFAULT NULL,
   `awarded_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`log_id`),
   FOREIGN KEY (`candidate_uid`) REFERENCES `candidates`(`uid`) ON DELETE CASCADE
@@ -33,13 +33,12 @@ CREATE TABLE IF NOT EXISTS `attendance` (
   `event_day` INT(1) NOT NULL,
   `attended_at` DATE NOT NULL,
   PRIMARY KEY (`attendance_id`),
-  FOREIGN KEY (`candidate_uid`) REFERENCES `candidates`(`uid`) ON DELETE CASCADE
+  FOREIGN KEY (`candidate_uid`) REFERENCES `candidates`(`uid`) ON DELETE CASCADE,
+  -- --- Add this line ---
+  UNIQUE KEY `unique_attendance_per_day` (`candidate_uid`, `event_day`)
+  -- --- End Add ---
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- --------------------------------------------------------
-
-ALTER TABLE `points_log`
-ADD COLUMN `admin_username` VARCHAR(50) NULL DEFAULT NULL AFTER `reason`;
 
 CREATE TABLE IF NOT EXISTS `admins` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -48,3 +47,4 @@ CREATE TABLE IF NOT EXISTS `admins` (
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

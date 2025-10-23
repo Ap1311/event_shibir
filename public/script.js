@@ -353,7 +353,7 @@ function renderBarChart(data) {
                     <div class="col-lg-7">
                         <h4 class="mb-3">Point History</h4>
                         <div class="card shadow-sm border-0">
-                            <div class="log-table-container table-responsive">
+                            <div class="log-table-container table-responsive rounded-3">
                                 <table class="table table-striped table-hover mb-0">
                                     <thead class="table-light" style="position: sticky; top: 0;"><tr><th>Date & Time</th><th>Reason</th><th>Admin</th><th class="text-end">Points</th></tr></thead>
                                     <tbody>${logRows}</tbody>

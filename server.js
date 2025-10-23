@@ -8,6 +8,7 @@ const session = require('express-session'); // Sessions
 const bcrypt = require('bcrypt');          // Password hashing
 const winston = require('winston');        // Logging
 const { format } = require('winston');     // Logging format helpers
+const fs = require('fs'); // Added for checking 404 file existence
 
 const app = express();
 const PORT = 3000;
@@ -50,7 +51,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const dbConfig = {
     host: 'localhost',
     user: 'root', // Your MySQL username
-    password: 'root', // Your MySQL password
+    password: 'Aarav@1311', // Your MySQL password
     database: 'event_manager',
     waitForConnections: true,
     connectionLimit: 15,
@@ -146,9 +147,9 @@ app.get('/api/auth/status', (req, res) => {
 
 // --- PROTECTED API ENDPOINTS (require requireLogin middleware) ---
 
-// Dashboard Summary (Updated)
+// Dashboard Summary (Updated for gender filter and activity feed details)
 app.get('/api/summary', requireLogin, async (req, res) => {
-    const { gender } = req.query; // Get gender filter from query params
+    const { gender } = req.query; // Get gender filter from query params ('all', 'Male', 'Female')
     let connection;
     try {
         connection = await pool.getConnection();
@@ -195,7 +196,8 @@ app.get('/api/summary', requireLogin, async (req, res) => {
     }
 });
 
-// Excel Backup
+
+// Excel Backup (Updated to include admin_username)
 app.get('/api/backup/excel', requireLogin, async (req, res) => {
     const username = req.session.username;
     const ipAddress = req.ip;
@@ -279,7 +281,7 @@ app.post('/api/candidates', requireLogin, async (req, res) => {
          logAction(username, 'Attempted Create Candidate', ipAddress, `Failed - Invalid Phone: ${phone}, Name: ${name}`);
         return res.status(400).json({ success: false, message: 'Phone number must be exactly 10 digits.' });
     }
-    if (gender !== 'Male' && gender !== 'Female') { // Basic gender validation
+     if (gender !== 'Male' && gender !== 'Female') { // Basic gender validation
         logAction(username, 'Attempted Create Candidate', ipAddress, `Failed - Invalid Gender: ${gender}, Name: ${name}`);
         return res.status(400).json({ success: false, message: 'Invalid gender selected.' });
     }
@@ -290,7 +292,7 @@ app.post('/api/candidates', requireLogin, async (req, res) => {
         connection = await pool.getConnection();
         const [result] = await connection.execute(
             'INSERT INTO candidates (name, age, phone, gender) VALUES (?, ?, ?, ?)',
-            [name, ageInt, phone, gender]
+            [name, ageInt, phone, gender] // Use parsed age
         );
         connection.release();
         logAction(username, 'Created Candidate', ipAddress, `UID: ${result.insertId}, Name: ${name}`);
@@ -355,7 +357,7 @@ app.get('/api/candidates/all', requireLogin, async (req, res) => {
      }
 });
 
-// Add Points Manually
+// Add Points Manually (Includes admin_username)
 app.post('/api/points', requireLogin, async (req, res) => {
     const { uid, points, reason } = req.body;
     const adminUsername = req.session.username; // Get admin username from session
@@ -385,7 +387,7 @@ app.post('/api/points', requireLogin, async (req, res) => {
     }
 });
 
-// Add event points (Bulk)
+// Add event points (Bulk - Includes admin_username)
 app.post('/api/event-points', requireLogin, async (req, res) => {
     const { uids, points, eventName } = req.body;
     const adminUsername = req.session.username;
@@ -441,7 +443,8 @@ app.post('/api/event-points', requireLogin, async (req, res) => {
     }
 });
 
-// Mark Attendance (Single)
+
+// Mark Attendance (Single) - Updated with Duplicate Check
 app.post('/api/attendance', requireLogin, async (req, res) => {
     const { uid, day } = req.body;
     const adminUsername = req.session.username;
@@ -451,13 +454,30 @@ app.post('/api/attendance', requireLogin, async (req, res) => {
     let connection;
     try {
         connection = await pool.getConnection();
+
         // Check if candidate exists
-        const [rows] = await connection.execute('SELECT uid FROM candidates WHERE uid = ?', [uid]);
-        if (rows.length === 0) {
+        const [candidateRows] = await connection.execute('SELECT uid FROM candidates WHERE uid = ?', [uid]);
+        if (candidateRows.length === 0) {
             connection.release();
             logAction(adminUsername, 'Attempted Mark Attendance', ipAddress, `Failed - UID ${uid} not found`);
             return res.status(404).json({ success: false, message: `Candidate UID ${uid} not found.` });
         }
+
+        // --- Check for existing attendance for this day ---
+        const [existingAttendance] = await connection.execute(
+            'SELECT attendance_id FROM attendance WHERE candidate_uid = ? AND event_day = ?',
+            [uid, day]
+        );
+
+        if (existingAttendance.length > 0) {
+            // Already marked for this day
+            connection.release();
+            logAction(adminUsername, 'Attempted Mark Attendance', ipAddress, `Failed - UID ${uid}, Day ${day} already marked`);
+            return res.status(409).json({ success: false, message: `Attendance already marked for UID ${uid} on Day ${day}.` }); // 409 Conflict
+        }
+        // --- End Check ---
+
+
         // Use transaction to ensure both inserts succeed or fail together
         await connection.beginTransaction();
         // Insert points log
@@ -481,16 +501,13 @@ app.post('/api/attendance', requireLogin, async (req, res) => {
         }
         logger.error(`Mark Attendance Error by ${adminUsername}, IP: ${ipAddress}: ${error.message}`);
         logAction(adminUsername, 'Attempted Mark Attendance', ipAddress, `Failed - UID: ${uid}, Error: ${error.message}`);
-        // Check for duplicate entry error (e.g., already marked attendance for that day)
-        if (error.code === 'ER_DUP_ENTRY') {
-             res.status(409).json({ success: false, message: `Attendance already marked for UID ${uid} on Day ${day}.` });
-        } else {
-             res.status(500).json({ success: false, message: 'Failed to mark attendance.' });
-        }
+        // Generic error for other issues
+        res.status(500).json({ success: false, message: 'Failed to mark attendance due to a server error.' });
     }
 });
 
-// Mark Bulk Attendance
+
+// Mark Bulk Attendance - Updated with Duplicate Check
 app.post('/api/attendance/bulk', requireLogin, async (req, res) => {
     const { uids, day } = req.body;
     const adminUsername = req.session.username;
@@ -499,23 +516,41 @@ app.post('/api/attendance/bulk', requireLogin, async (req, res) => {
     const points = 100;
     const reason = `Attendance Day ${day}`;
     let successUIDs = [];
-    let failedUIDs = [];
+    let failedUIDs = []; // For 'not found' or other errors
     let duplicateUIDs = []; // Track duplicates specifically
     let overallError = null;
 
-    // Process each UID individually with its own transaction
+    // Process each UID individually
     for (const uid of uidArray) {
         const trimmedUid = uid.trim();
         let connection;
         try {
             connection = await pool.getConnection();
+
             // Check if candidate exists
-            const [rows] = await connection.execute('SELECT uid FROM candidates WHERE uid = ?', [trimmedUid]);
-            if (rows.length === 0) {
+            const [candidateRows] = await connection.execute('SELECT uid FROM candidates WHERE uid = ?', [trimmedUid]);
+            if (candidateRows.length === 0) {
                 failedUIDs.push(trimmedUid);
                 connection.release();
                 continue; // Skip if candidate not found
             }
+
+            // --- Check for existing attendance for this day ---
+            const [existingAttendance] = await connection.execute(
+                'SELECT attendance_id FROM attendance WHERE candidate_uid = ? AND event_day = ?',
+                [trimmedUid, day]
+            );
+
+            if (existingAttendance.length > 0) {
+                // Already marked for this day
+                duplicateUIDs.push(trimmedUid);
+                connection.release();
+                logger.warn(`Bulk Attendance Duplicate for UID ${trimmedUid}, Day ${day} by ${adminUsername}, IP: ${ipAddress}`);
+                continue; // Skip to the next UID
+            }
+            // --- End Check ---
+
+
             // Start transaction for this UID
             await connection.beginTransaction();
             // Insert points log
@@ -532,15 +567,10 @@ app.post('/api/attendance/bulk', requireLogin, async (req, res) => {
             successUIDs.push(trimmedUid);
         } catch (error) {
             if (connection) await connection.rollback(); // Rollback on error
-            // Check if it's a duplicate entry error
-            if (error.code === 'ER_DUP_ENTRY') {
-                duplicateUIDs.push(trimmedUid);
-                 logger.warn(`Bulk Attendance Duplicate for UID ${trimmedUid}, Day ${day} by ${adminUsername}, IP: ${ipAddress}`);
-            } else {
-                failedUIDs.push(trimmedUid);
-                logger.error(`Bulk Attendance Error for UID ${trimmedUid} by ${adminUsername}, IP: ${ipAddress}: ${error.message}`);
-                overallError = error; // Track if any other type of error occurred
-            }
+            // Log other errors (not duplicates, not 'not found')
+            failedUIDs.push(trimmedUid);
+            logger.error(`Bulk Attendance Error for UID ${trimmedUid} by ${adminUsername}, IP: ${ipAddress}: ${error.message}`);
+            overallError = error; // Track if any other type of error occurred
         } finally {
             if (connection) connection.release(); // Always release connection
         }
@@ -557,7 +587,7 @@ app.post('/api/attendance/bulk', requireLogin, async (req, res) => {
     const logDetails = `Day: ${day}, Success: ${successUIDs.join(',') || 'None'}, Duplicates: ${duplicateUIDs.join(',') || 'None'}, Failed: ${failedUIDs.join(',') || 'None'}`;
     logAction(adminUsername, 'Marked Bulk Attendance', ipAddress, `${logStatus} - ${logDetails}`);
 
-    // Overall success is true only if no failures (duplicates are okay)
+    // Overall success is true only if no failures (duplicates are okay from user perspective, just skipped)
     res.json({ success: failedUIDs.length === 0, message: message.trim() || "No valid UIDs provided." });
 });
 
@@ -606,7 +636,7 @@ app.get('*', requireLogin, (req, res) => {
         logger.warn(`Resource not found: ${req.path} from IP: ${req.ip}`);
         // Send a custom 404 page if it exists, otherwise a simple message
         const fourOhFourPath = path.join(__dirname, 'public', '404.html');
-        if (require('fs').existsSync(fourOhFourPath)) {
+        if (fs.existsSync(fourOhFourPath)) { // Use fs.existsSync
             return res.status(404).sendFile(fourOhFourPath);
         } else {
             return res.status(404).send('Not found');
