@@ -22,6 +22,13 @@
             color: var(--bs-text-muted);
             margin-left: 5px;
         }
+        /* Style for event list items */
+        #eventList .list-group-item {
+            cursor: pointer;
+        }
+         #eventList .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body>
@@ -38,16 +45,19 @@
             <ul class="nav nav-pills flex-column mb-auto" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation"><button class="nav-link text-start active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab"><i class="bi bi-grid-1x2-fill me-2"></i>Dashboard</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link text-start" id="create-candidate-tab" data-bs-toggle="tab" data-bs-target="#create-candidate" type="button" role="tab"><i class="bi bi-person-plus-fill me-2"></i>Create Candidate</button></li>
+                
                 <li class="nav-item d-none" role="presentation"><button class="nav-link text-start" id="view-candidate-tab" data-bs-toggle="tab" data-bs-target="#view-candidate" type="button" role="tab"><i class="bi bi-person-lines-fill me-2"></i>View Candidate</button></li>
+                
                 <li class="nav-item" role="presentation"><button class="nav-link text-start" id="all-candidates-tab" data-bs-toggle="tab" data-bs-target="#all-candidates" type="button" role="tab"><i class="bi bi-people-fill me-2"></i>All Candidates</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link text-start" id="add-points-tab" data-bs-toggle="tab" data-bs-target="#add-points" type="button" role="tab"><i class="bi bi-plus-circle-dotted me-2"></i>Add Points</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link text-start" id="event-points-tab" data-bs-toggle="tab" data-bs-target="#event-points" type="button" role="tab"><i class="bi bi-award-fill me-2"></i>Event Points</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link text-start" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button" role="tab"><i class="bi bi-check-circle-fill me-2"></i>Attendance</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link text-start" id="bulk-attendance-tab" data-bs-toggle="tab" data-bs-target="#bulk-attendance" type="button" role="tab"><i class="bi bi-check-all me-2"></i>Bulk Attend</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link text-start" id="event-search-tab" data-bs-toggle="tab" data-bs-target="#event-search" type="button" role="tab"><i class="bi bi-calendar-event-fill me-2"></i>Event Search</button></li>
                 <hr>
                 <li class="nav-item"><a href="/api/backup/excel" class="nav-link text-start text-success"><i class="bi bi-cloud-download-fill me-2"></i>Download Backup</a></li>
-                <hr>
-			</ul>
+            </ul>
+            <hr>
             <div class="mt-auto">
                  <p class="text-muted small mb-1">Logged in as:</p>
                  <p class="fw-bold" id="loggedInUsername">Loading...</p>
@@ -81,27 +91,35 @@
 
             <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
                 <h3 class="mb-3 pt-4">Dashboard</h3>
-                 <div class="alert-placeholder"></div> <div class="row" id="stat-cards">
+                 <div class="alert-placeholder"></div>
+                <div class="row" id="stat-cards">
                     <div class="col-lg-4 mb-3"><div class="card stat-card shadow-sm border-0 text-white bg-primary"><div class="card-body"><h5 class="card-title"><i class="bi bi-people-fill me-2"></i>Total Candidates</h5><p class="card-text fs-2" id="stat-total-candidates">0</p></div></div></div>
                     <div class="col-lg-4 mb-3"><div class="card stat-card shadow-sm border-0 text-white bg-success"><div class="card-body"><h5 class="card-title"><i class="bi bi-star-fill me-2"></i>Total Points Awarded</h5><p class="card-text fs-2" id="stat-total-points">0</p></div></div></div>
-                    <div class="col-lg-4 mb-3"><div class="card stat-card shadow-sm border-0 text-white bg-info"><div class="card-body"><h5 class="card-title"><i class="bi bi-check-circle-fill me-2"></i>Total Attendance Marks</h5><p class="card-text fs-2" id="stat-total-attendance">0</p></div></div></div>
+                    <div class="col-lg-4 mb-3">
+                         <div class="card stat-card shadow-sm border-0 text-white bg-info">
+                             <div class="card-body">
+                                 <h5 class="card-title"><i class="bi bi-calendar-check-fill me-2"></i>Today's Attendance Marks</h5>
+                                 <p class="card-text fs-2" id="stat-today-attendance">0</p>
+                             </div>
+                         </div>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-8 mb-3"><div class="card shadow-sm border-0"><div class="card-body"><h5 class="card-title">Points Awarded (Last 7 Days)</h5><canvas id="pointsBarChart"></canvas></div></div></div>
                     <div class="col-lg-4 mb-3">
                         <div class="card shadow-sm border-0">
                             <div class="card-body">
-								<div class="d-flex justify-content-between align-items-center mb-2">
-									<h5 class="card-title mb-0">Top 3 Aaradhak</h5>
-									<div class="btn-group btn-group-sm" role="group" aria-label="Top Users Gender Filter">
-										<button type="button" class="btn btn-outline-primary active" data-top-gender-filter="all">ALL</button>
-										<button type="button" class="btn btn-outline-primary" data-top-gender-filter="Male">M</button>
-										<button type="button" class="btn btn-outline-primary" data-top-gender-filter="Female">F</button>
-									</div>
-								</div>
-								<ul class="list-group list-group-flush" id="top-users-list"></ul>
-							</div>
-						</div>
+                                <h5 class="card-title">Top 3 Users</h5>
+                                <div class="d-flex justify-content-center mb-2">
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="Top Users Gender Filter">
+                                      <button type="button" class="btn btn-outline-primary active" data-top-gender-filter="all">ALL</button>
+                                      <button type="button" class="btn btn-outline-primary" data-top-gender-filter="Male">M</button>
+                                      <button type="button" class="btn btn-outline-primary" data-top-gender-filter="Female">F</button>
+                                    </div>
+                                </div>
+                                <ul class="list-group list-group-flush" id="top-users-list"></ul>
+                             </div>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -109,9 +127,8 @@
                         <div class="card shadow-sm border-0">
                             <div class="card-body">
                                 <h5 class="card-title">Recent Activity</h5>
-                                <ul class="list-group list-group-flush" id="activity-feed">
-                                    </ul>
-                                </div>
+                                <ul class="list-group list-group-flush" id="activity-feed"></ul>
+                             </div>
                         </div>
                     </div>
                 </div>
@@ -154,12 +171,12 @@
                         <div class="row g-3 align-items-end">
                             <div class="col-md-4"><label for="filterGender" class="form-label">Gender</label><select id="filterGender" class="form-select"><option value="all">All Genders</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
                             <div class="col-md-4"><label for="filterSort" class="form-label">Sort By</label><select id="filterSort" class="form-select"><option value="uid">UID</option><option value="name">Name</option><option value="total_points">Total Points</option><option value="today_points">Today's Points</option></select></div>
-                            <div class="col-md-4"><label for="filterSearch" class="form-label">Search Name/UID</label><input type="text" id="filterSearch" class="form-control" placeholder="Type to search..."></div>
+                            <div class="col-md-4"><label for="filterSearch" class="form-label">Search Name/UID/Phone</label><input type="text" id="filterSearch" class="form-control" placeholder="Type to search..."></div>
                         </div>
                     </div>
                 </div>
                 <div class="card shadow-sm border-0">
-                    <div class="table-responsive rounded-3">
+                    <div class="table-responsive">
                         <table class="table table-striped table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
@@ -191,7 +208,27 @@
                 <div class="alert-placeholder"></div>
                 <div class="card shadow-sm border-0"><div class="card-body">
                 <p class="card-subtitle mb-2 text-muted">Quickly add the same points to multiple candidates.</p>
-                <form id="eventPointsForm"><div class="mb-3"><label for="eventName" class="form-label">Event Name</label><input type="text" class="form-control" id="eventName" placeholder="e.g., Treasure Hunt Participation" required></div><div class="mb-3"><label for="eventPoints" class="form-label">Points per Candidate</label><input type="number" class="form-control" id="eventPoints" required></div><div class="mb-3"><label for="eventUids" class="form-label">Candidate UIDs</label><textarea class="form-control" id="eventUids" rows="5"></textarea></div><button type="submit" class="btn btn-primary"><i class="bi bi-award me-2"></i>Award Points</button></form>
+                <form id="eventPointsForm">
+                    <div class="mb-3">
+                        <label for="existingEventSelect" class="form-label">Or Select Existing Event</label>
+                        <select class="form-select" id="existingEventSelect">
+                            <option value="">-- Select an event to copy name --</option>
+                            </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="eventName" class="form-label">Event Name (Custom or from above)</label>
+                        <input type="text" class="form-control" id="eventName" placeholder="e.g., Treasure Hunt Participation" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="eventPoints" class="form-label">Points per Candidate</label>
+                        <input type="number" class="form-control" id="eventPoints" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="eventUids" class="form-label">Candidate UIDs</label>
+                        <textarea class="form-control" id="eventUids" rows="5"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-award me-2"></i>Award Points</button>
+                </form>
                 </div></div>
             </div>
 
@@ -210,6 +247,44 @@
                 <form id="bulkAttendanceForm"><div class="mb-3"><label for="bulkEventDay" class="form-label">Event Day</label><select class="form-select" id="bulkEventDay"><option value="1">Day 1</option><option value="2">Day 2</option><option value="3">Day 3</option><option value="4">Day 4</option><option value="5">Day 5</option></select></div><div class="mb-3"><label for="bulkEventUids" class="form-label">Candidate UIDs</label><textarea class="form-control" id="bulkEventUids" rows="5" required></textarea></div><button type="submit" class="btn btn-primary"><i class="bi bi-check-all me-2"></i>Mark All Present</button></form>
                 </div></div>
             </div>
+
+             <div class="tab-pane fade" id="event-search" role="tabpanel">
+                <h3 class="mb-3 pt-4">Search Events</h3>
+                <div class="alert-placeholder"></div>
+                <form id="eventSearchForm" class="d-flex mb-3">
+                     <input class="form-control me-2" type="search" id="eventSearchTerm" placeholder="Enter Event Name (Reason)">
+                     <button class="btn btn-success" type="submit"><i class="bi bi-search me-2"></i>Search Events</button>
+                </form>
+                <div class="row">
+                    <div class="col-md-5 mb-3">
+                         <h5>Matching Events</h5>
+                         <div class="card shadow-sm border-0">
+                            <div class="list-group list-group-flush" id="eventList" style="max-height: 400px; overflow-y: auto;">
+                                <div class="list-group-item text-muted">Search for events above.</div>
+                            </div>
+                         </div>
+                    </div>
+                     <div class="col-md-7">
+                         <h5>Participants</h5>
+                          <div class="card shadow-sm border-0">
+                            <div class="card-body">
+                                <h6 id="selectedEventName" class="card-title mb-3">Select an event from the list.</h6>
+                                <div class="table-responsive" style="max-height: 360px;">
+                                    <table class="table table-sm table-striped">
+                                        <thead>
+                                            <tr><th>UID</th><th>Name</th></tr>
+                                        </thead>
+                                        <tbody id="participantListBody">
+                                            <tr><td colspan="2" class="text-muted">No event selected.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                          </div>
+                     </div>
+                </div>
+            </div>
+
 
         </div> </main>
 
