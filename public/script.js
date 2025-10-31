@@ -1,6 +1,8 @@
 // script.js
 const API_URL = '/api';
 let pointsBarChart = null; // Chart instance for bar chart
+let allCandidatesData = [];
+let filteredCandidatesData = []; // Global variable to store filtered data for PDF export
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -279,24 +281,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 3. Add Points Manually
-     const addPointsForm = document.getElementById('addPointsForm');
-    if (addPointsForm) {
-        addPointsForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const paneId = 'add-points';
-            const data = { uid: document.getElementById('addPointsUid').value, points: document.getElementById('points').value, reason: document.getElementById('reason').value };
-            try {
-                const response = await fetch(`${API_URL}/points`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-                const result = await response.json();
-                 if (!response.ok) throw new Error(result.message || `HTTP error! status: ${response.status}`);
-                showAlert(paneId, 'Points added successfully.', true);
-                e.target.reset();
-            } catch (error) { showAlert(paneId, error.message, false, true); }
-        });
-    }
-
-    // 4. Add Points for Event (Bulk) - NOW WITH DROPDOWN LOGIC
+    // 3. Add Points for Event (Bulk) - NOW WITH DROPDOWN LOGIC
     const eventPointsForm = document.getElementById('eventPointsForm');
     if (eventPointsForm) {
         eventPointsForm.addEventListener('submit', async (e) => {
@@ -313,30 +298,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 5. Mark Attendance (Single)
+    // 4. Mark Attendance (Bulk - Renamed)
     const attendanceForm = document.getElementById('attendanceForm');
     if (attendanceForm) {
         attendanceForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const paneId = 'attendance';
-            const data = { uid: document.getElementById('attendanceUid').value, day: document.getElementById('eventDay').value };
-            try {
-                const response = await fetch(`${API_URL}/attendance`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message || `HTTP error! status: ${response.status}`);
-                showAlert(paneId, result.message, true);
-                e.target.reset();
-            } catch (error) { showAlert(paneId, error.message, false, true); }
-        });
-    }
-
-    // 6. Mark Bulk Attendance
-    const bulkAttendanceForm = document.getElementById('bulkAttendanceForm');
-    if (bulkAttendanceForm) {
-        bulkAttendanceForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const paneId = 'bulk-attendance';
-            const data = { day: document.getElementById('bulkEventDay').value, uids: document.getElementById('bulkEventUids').value };
+            const data = { day: document.getElementById('attendanceEventDay').value, uids: document.getElementById('attendanceUids').value };
              try {
                 const response = await fetch(`${API_URL}/attendance/bulk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
                 const result = await response.json();
@@ -348,8 +316,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    // 7. "All Candidates" Tab Logic
-    let allCandidatesData = [];
+    // 5. "All Candidates" Tab Logic
     async function loadAllCandidates() {
         const bodyElement = document.getElementById('allCandidatesBody');
         if (!bodyElement) return;
@@ -367,22 +334,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // applyFiltersAndSort with phone search
     function applyFiltersAndSort() {
-        let filteredData = [...allCandidatesData];
+        filteredCandidatesData = [...allCandidatesData]; // Use global variable
         const genderEl = document.getElementById('filterGender');
         const sortEl = document.getElementById('filterSort');
         const searchEl = document.getElementById('filterSearch');
         const gender = genderEl ? genderEl.value : 'all';
         const sortBy = sortEl ? sortEl.value : 'uid';
         const search = searchEl ? searchEl.value.toLowerCase().trim() : '';
-        if (gender !== 'all') { filteredData = filteredData.filter(c => c.gender === gender); }
-        if (search) { filteredData = filteredData.filter(c => c.name.toLowerCase().includes(search) || c.uid.toString().includes(search) || (c.phone && c.phone.includes(search))); }
-        filteredData.sort((a, b) => {
+        if (gender !== 'all') { filteredCandidatesData = filteredCandidatesData.filter(c => c.gender === gender); }
+        if (search) { filteredCandidatesData = filteredCandidatesData.filter(c => c.name.toLowerCase().includes(search) || c.uid.toString().includes(search) || (c.phone && c.phone.includes(search))); }
+        filteredCandidatesData.sort((a, b) => {
             if (sortBy === 'name') return a.name.localeCompare(b.name);
             if (sortBy === 'total_points') return b.total_points - a.total_points;
             if (sortBy === 'today_points') return b.today_points - a.today_points;
             return a.uid - b.uid;
         });
-        renderAllCandidates(filteredData);
+        renderAllCandidates(filteredCandidatesData);
     }
 
     function renderAllCandidates(candidates) {
@@ -432,9 +399,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         allCandidatesTab.addEventListener('show.bs.tab', () => loadAllCandidates());
         if(allCandidatesTab.classList.contains('active')) loadAllCandidates();
     }
+    
+    // 6. PDF Download Button Logic
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+    if (downloadPdfBtn) {
+        downloadPdfBtn.addEventListener('click', () => {
+            
+            // *** FIX HERE ***
+            // Check if jspdf and its properties exist before trying to access them
+            if (typeof jspdf === 'undefined' || 
+                typeof jspdf.jsPDF === 'undefined' || 
+                typeof jspdf.plugin === 'undefined' || 
+                typeof jspdf.plugin.autotable === 'undefined') {
+                
+                showAlert('all-candidates', 'PDF library not loaded. Please refresh.', false, true);
+                return;
+            }
+            // *** END FIX ***
+            
+            const { jsPDF } = jspdf;
+            const doc = new jsPDF();
+    
+            const title = 'Student List';
+            const head = [['UID', 'Name', 'Age', 'Phone', 'Gender', "Today's", 'Total']];
+            // Use the globally filtered data
+            const body = filteredCandidatesData.map(c => [
+                c.uid,
+                c.name,
+                c.age,
+                c.phone || '-',
+                c.gender,
+                c.today_points,
+                c.total_points
+            ]);
+    
+            doc.setFontSize(18);
+            doc.text(title, 14, 22);
+    
+            doc.autoTable({
+                startY: 30,
+                head: head,
+                body: body,
+                theme: 'striped',
+                headStyles: { fillColor: [41, 128, 185] } // Blue header
+            });
+    
+            doc.save('student-list.pdf');
+        });
+    }
 
-    // --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-    // 8. Event Search Logic (Loads all events by default)
+
+    // 7. Event Search Logic (Loads all events by default)
     const eventSearchForm = document.getElementById('eventSearchForm');
     const eventSearchTermInput = document.getElementById('eventSearchTerm');
     const eventList = document.getElementById('eventList');
@@ -542,7 +557,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     // --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-    // 9. Event Points Tab Logic (Populate Dropdown)
+    // 8. Event Points Tab Logic (Populate Dropdown)
     
     const eventPointsTab = document.getElementById('event-points-tab');
     const existingEventSelect = document.getElementById('existingEventSelect');

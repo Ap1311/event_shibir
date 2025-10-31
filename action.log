@@ -274,3 +274,86 @@
 2025-10-30 10:50:44.331 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Added Event Points (Bulk), Details: Success - Event: santi, Points: 10, Success UIDs: 177, Failed UIDs: None
 2025-10-30 10:51:20.994 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance, Details: UID: 177, Day: 2
 2025-10-30 12:31:30.483 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Added Points, Details: UID: 156, Points: 50, Reason: Best Answer
+2025-10-30 12:44:52.170 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Downloaded Backup, Details: Success
+2025-10-30 12:48:04.041 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Added Event Points (Bulk), Details: Success - Event: QA session day 2, Points: 20, Success UIDs: 176,67,97,26,72,121,125,108,22,39,34,18,17,57,180,127, Failed UIDs: None
+2025-10-30 12:50:12.333 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Added Event Points (Bulk), Details: Success - Event: minus point, Points: -20, Success UIDs: 124,140,139,165,117,134,91,80,104,101,138,83,126, Failed UIDs: None
+2025-10-30 12:50:46.664 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Added Points, Details: UID: 152, Points: -40, Reason: point minus
+2025-10-30 12:58:09.295 +0530 [INFO]: Server started on port 3000
+2025-10-30 12:59:44.216 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 12:59:44.717 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 12:59:48.667 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Logged In
+2025-10-30 13:05:29.882 +0530 [WARN]: Bulk Attendance Duplicate for UID 137, Day 2 by admin1, IP: ::ffff:127.0.0.1
+2025-10-30 13:05:29.886 +0530 [WARN]: Bulk Attendance Duplicate for UID 75, Day 2 by admin1, IP: ::ffff:127.0.0.1
+2025-10-30 13:05:29.890 +0530 [WARN]: Bulk Attendance Duplicate for UID 168, Day 2 by admin1, IP: ::ffff:127.0.0.1
+2025-10-30 13:05:29.906 +0530 [WARN]: Bulk Attendance Duplicate for UID 97, Day 2 by admin1, IP: ::ffff:127.0.0.1
+2025-10-30 13:05:29.910 +0530 [WARN]: Bulk Attendance Duplicate for UID 156, Day 2 by admin1, IP: ::ffff:127.0.0.1
+2025-10-30 13:05:29.914 +0530 [WARN]: Bulk Attendance Duplicate for UID 111, Day 2 by admin1, IP: ::ffff:127.0.0.1
+2025-10-30 13:05:29.918 +0530 [WARN]: Bulk Attendance Duplicate for UID 153, Day 2 by admin1, IP: ::ffff:127.0.0.1
+2025-10-30 13:05:29.924 +0530 [WARN]: Bulk Attendance Duplicate for UID 105, Day 2 by admin1, IP: ::ffff:127.0.0.1
+2025-10-30 13:05:29.928 +0530 [WARN]: Bulk Attendance Duplicate for UID 120, Day 2 by admin1, IP: ::ffff:127.0.0.1
+2025-10-30 13:05:29.931 +0530 [WARN]: Bulk Attendance Duplicate for UID 83, Day 2 by admin1, IP: ::ffff:127.0.0.1
+2025-10-30 13:05:29.956 +0530 [WARN]: Bulk Attendance Duplicate for UID 104, Day 2 by admin1, IP: ::ffff:127.0.0.1
+2025-10-30 13:05:29.959 +0530 [WARN]: Bulk Attendance Duplicate for UID 101, Day 2 by admin1, IP: ::ffff:127.0.0.1
+2025-10-30 13:05:29.960 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Bulk Attendance, Details: Partial (Duplicates) - Day: 2, Success: 152,133,138,94,178,179, Duplicates: 137,75,168,97,156,111,153,105,120,83,104,101, Failed: None
+2025-10-30 13:14:13.211 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Attempted Mark Attendance, Details: Failed - UID 158, Day 2 already marked
+2025-10-30 13:16:18.611 +0530 [INFO]: Server started on port 3000
+2025-10-30 13:16:22.509 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 13:16:23.171 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 13:16:26.072 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Logged In
+2025-10-30 15:01:18.063 +0530 [INFO]: Server started on port 3000
+2025-10-30 15:01:24.678 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 15:01:25.112 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 15:01:30.732 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Logged In
+2025-10-30 15:02:44.249 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Downloaded Backup, Details: Success
+2025-10-30 15:13:27.667 +0530 [INFO]: Server started on port 3000
+2025-10-30 15:13:33.210 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 15:13:33.981 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 15:13:39.872 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Logged In
+2025-10-30 15:15:27.697 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 2, Success: 145, Duplicates: None, Failed: None
+2025-10-30 15:19:40.285 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Added Event Points (Bulk), Details: Partial Failure - Event: minus point, Points: -20, Success UIDs: 80,92,179,76,70,102, Failed UIDs: 11
+2025-10-30 15:22:27.100 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Added Event Points (Bulk), Details: Success - Event: point minus, Points: -20, Success UIDs: 103,109, Failed UIDs: None
+2025-10-30 15:23:06.098 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Added Event Points (Bulk), Details: Success - Event: point minus, Points: -20, Success UIDs: 103, Failed UIDs: None
+2025-10-30 16:37:53.213 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 16:37:53.536 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 16:37:57.747 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Logged In
+2025-10-30 19:36:39.535 +0530 [INFO]: Server started on port 3000
+2025-10-30 19:36:48.622 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 19:36:49.353 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 19:36:52.617 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Logged In
+2025-10-30 19:38:02.123 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 2, Success: 175, Duplicates: None, Failed: None
+2025-10-30 19:40:38.113 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Added Event Points (Bulk), Details: Success - Event: minus point, Points: -10, Success UIDs: 72,102,71,69,109,93,111,164,74,79,106,167,98,100,78,104,156, Failed UIDs: None
+2025-10-30 20:56:11.433 +0530 [INFO]: Server started on port 3000
+2025-10-30 20:56:17.533 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 20:56:17.670 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-30 20:56:22.880 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Logged In
+2025-10-31 06:41:42.653 +0530 [INFO]: Server started on port 3000
+2025-10-31 06:41:53.311 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-31 06:41:53.766 +0530 [WARN]: Unauthorized access attempt to /.env from IP: ::ffff:127.0.0.1
+2025-10-31 06:41:58.760 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Logged In
+2025-10-31 06:43:31.894 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Downloaded Backup, Details: Success
+2025-10-31 06:54:04.111 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 175,134,91, Duplicates: None, Failed: None
+2025-10-31 06:56:42.255 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 92,125, Duplicates: None, Failed: None
+2025-10-31 06:58:25.241 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 26,110,117,83,20,50, Duplicates: None, Failed: None
+2025-10-31 06:59:07.534 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 112,54,36,17, Duplicates: None, Failed: None
+2025-10-31 07:03:15.639 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 90,43,71,109,97,105,19,28,77,89,34,30,52,55,124,145, Duplicates: None, Failed: None
+2025-10-31 07:05:04.940 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 72,102,127,40,121,122,45,151,56,120, Duplicates: None, Failed: None
+2025-10-31 07:07:32.287 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 95,85,78,47,104,49,74,57,69,137,66,135,133, Duplicates: None, Failed: None
+2025-10-31 07:08:56.266 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 126,87,111,37,27,155,53, Duplicates: None, Failed: None
+2025-10-31 07:14:01.482 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 144,65,62,63,139,93,178,130,176,44,98,100,156,75,158,179,154,166,141,82,33,147,48,16,119,76,165,173,22,99,79, Duplicates: None, Failed: None
+2025-10-31 07:16:17.356 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 25,160,149,18,101,118,29,46,142,68,108, Duplicates: None, Failed: None
+2025-10-31 07:17:10.807 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 35,38,15,24,129, Duplicates: None, Failed: None
+2025-10-31 07:17:36.353 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Created Candidate, Details: UID: 181, Name: Veera Nirmal Shah
+2025-10-31 07:19:07.905 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 181,161,88,86,157, Duplicates: None, Failed: None
+2025-10-31 07:21:40.862 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 23,148,67,103, Duplicates: None, Failed: None
+2025-10-31 07:22:20.099 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 84,150, Duplicates: None, Failed: None
+2025-10-31 07:23:37.996 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 39, Duplicates: None, Failed: None
+2025-10-31 07:24:32.107 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 143, Duplicates: None, Failed: None
+2025-10-31 07:25:36.475 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 70, Duplicates: None, Failed: None
+2025-10-31 07:26:15.594 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 169, Duplicates: None, Failed: None
+2025-10-31 07:30:31.699 +0530 [WARN]: Attendance (Bulk) Duplicate for UID 91, Day 3 by admin1, IP: ::ffff:127.0.0.1
+2025-10-31 07:30:31.708 +0530 [WARN]: Attendance (Bulk) Duplicate for UID 130, Day 3 by admin1, IP: ::ffff:127.0.0.1
+2025-10-31 07:30:31.714 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Partial (Duplicates) - Day: 3, Success: 60,80,96,140,61,146,138,21,153,177, Duplicates: 91,130, Failed: None
+2025-10-31 07:31:26.359 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Downloaded Backup, Details: Success
+2025-10-31 07:32:03.798 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Success - Day: 3, Success: 180, Duplicates: None, Failed: None
+2025-10-31 07:34:09.906 +0530 [WARN]: Attendance (Bulk) Duplicate for UID 180, Day 3 by admin1, IP: ::ffff:127.0.0.1
+2025-10-31 07:34:09.907 +0530 [INFO]: Admin: admin1, IP: ::ffff:127.0.0.1, Action: Marked Attendance (Bulk), Details: Partial (Duplicates) - Day: 3, Success: None, Duplicates: 180, Failed: None

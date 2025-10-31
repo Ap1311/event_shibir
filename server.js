@@ -320,35 +320,6 @@ app.get('/api/candidates/all', requireLogin, async (req, res) => {
      }
 });
 
-// Add Points Manually
-app.post('/api/points', requireLogin, async (req, res) => {
-    const { uid, points, reason } = req.body;
-    const adminUsername = req.session.username;
-    const ipAddress = req.ip;
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        const [rows] = await connection.execute('SELECT uid FROM candidates WHERE uid = ?', [uid]);
-        if (rows.length === 0) {
-            connection.release();
-            logAction(adminUsername, 'Attempted Add Points', ipAddress, `Failed - UID ${uid} not found`);
-            return res.status(404).json({ success: false, message: `Candidate UID ${uid} not found.` });
-        }
-        await connection.execute(
-            'INSERT INTO points_log (candidate_uid, points, reason, admin_username) VALUES (?, ?, ?, ?)',
-            [uid, points, reason, adminUsername]
-        );
-        connection.release();
-        logAction(adminUsername, 'Added Points', ipAddress, `UID: ${uid}, Points: ${points}, Reason: ${reason}`);
-        res.json({ success: true, message: 'Points added successfully.' });
-    } catch (error) {
-        if (connection) connection.release();
-        logger.error(`Add Points Error by ${adminUsername}, IP: ${ipAddress}: ${error.message}`);
-        logAction(adminUsername, 'Attempted Add Points', ipAddress, `Failed - UID: ${uid}, Error: ${error.message}`);
-        res.status(500).json({ success: false, message: 'Failed to add points.' });
-    }
-});
-
 // Add event points (Bulk)
 app.post('/api/event-points', requireLogin, async (req, res) => {
     const { uids, points, eventName } = req.body;
@@ -398,56 +369,6 @@ app.post('/api/event-points', requireLogin, async (req, res) => {
 });
 
 
-// Mark Attendance (Single - Includes duplicate check)
-app.post('/api/attendance', requireLogin, async (req, res) => {
-    const { uid, day } = req.body;
-    const adminUsername = req.session.username;
-    const ipAddress = req.ip;
-    const points = 100;
-    const reason = `Attendance Day ${day}`;
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        const [candidateRows] = await connection.execute('SELECT uid FROM candidates WHERE uid = ?', [uid]);
-        if (candidateRows.length === 0) {
-            connection.release();
-            logAction(adminUsername, 'Attempted Mark Attendance', ipAddress, `Failed - UID ${uid} not found`);
-            return res.status(404).json({ success: false, message: `Candidate UID ${uid} not found.` });
-        }
-        const [existingAttendance] = await connection.execute(
-            'SELECT attendance_id FROM attendance WHERE candidate_uid = ? AND event_day = ?',
-            [uid, day]
-        );
-        if (existingAttendance.length > 0) {
-            connection.release();
-            logAction(adminUsername, 'Attempted Mark Attendance', ipAddress, `Failed - UID ${uid}, Day ${day} already marked`);
-            return res.status(409).json({ success: false, message: `Attendance already marked for UID ${uid} on Day ${day}.` });
-        }
-        await connection.beginTransaction();
-        await connection.execute(
-            'INSERT INTO points_log (candidate_uid, points, reason, admin_username) VALUES (?, ?, ?, ?)',
-            [uid, points, reason, adminUsername]
-        );
-        await connection.execute(
-            'INSERT INTO attendance (candidate_uid, event_day, attended_at) VALUES (?, ?, CURDATE())',
-            [uid, day]
-        );
-        await connection.commit();
-        connection.release();
-        logAction(adminUsername, 'Marked Attendance', ipAddress, `UID: ${uid}, Day: ${day}`);
-        res.json({ success: true, message: `Attendance marked for Day ${day}.` });
-    } catch (error) {
-        if (connection) {
-             await connection.rollback();
-             connection.release();
-        }
-        logger.error(`Mark Attendance Error by ${adminUsername}, IP: ${ipAddress}: ${error.message}`);
-        logAction(adminUsername, 'Attempted Mark Attendance', ipAddress, `Failed - UID: ${uid}, Error: ${error.message}`);
-        res.status(500).json({ success: false, message: 'Failed to mark attendance due to a server error.' });
-    }
-});
-
-
 // Mark Bulk Attendance (Includes duplicate check)
 app.post('/api/attendance/bulk', requireLogin, async (req, res) => {
     const { uids, day } = req.body;
@@ -479,7 +400,7 @@ app.post('/api/attendance/bulk', requireLogin, async (req, res) => {
             if (existingAttendance.length > 0) {
                 duplicateUIDs.push(trimmedUid);
                 connection.release();
-                logger.warn(`Bulk Attendance Duplicate for UID ${trimmedUid}, Day ${day} by ${adminUsername}, IP: ${ipAddress}`);
+                logger.warn(`Attendance (Bulk) Duplicate for UID ${trimmedUid}, Day ${day} by ${adminUsername}, IP: ${ipAddress}`);
                 continue;
             }
             await connection.beginTransaction();
@@ -496,7 +417,7 @@ app.post('/api/attendance/bulk', requireLogin, async (req, res) => {
         } catch (error) {
             if (connection) await connection.rollback();
             failedUIDs.push(trimmedUid);
-            logger.error(`Bulk Attendance Error for UID ${trimmedUid} by ${adminUsername}, IP: ${ipAddress}: ${error.message}`);
+            logger.error(`Attendance (Bulk) Error for UID ${trimmedUid} by ${adminUsername}, IP: ${ipAddress}: ${error.message}`);
             overallError = error;
         } finally {
             if (connection) connection.release();
@@ -511,7 +432,7 @@ app.post('/api/attendance/bulk', requireLogin, async (req, res) => {
     const logStatus = (failedUIDs.length === 0 && duplicateUIDs.length === 0) ? 'Success' :
                       (failedUIDs.length === 0 && duplicateUIDs.length > 0) ? 'Partial (Duplicates)' : 'Partial Failure';
     const logDetails = `Day: ${day}, Success: ${successUIDs.join(',') || 'None'}, Duplicates: ${duplicateUIDs.join(',') || 'None'}, Failed: ${failedUIDs.join(',') || 'None'}`;
-    logAction(adminUsername, 'Marked Bulk Attendance', ipAddress, `${logStatus} - ${logDetails}`);
+    logAction(adminUsername, 'Marked Attendance (Bulk)', ipAddress, `${logStatus} - ${logDetails}`);
 
     res.json({ success: failedUIDs.length === 0, message: message.trim() || "No valid UIDs provided." });
 });
