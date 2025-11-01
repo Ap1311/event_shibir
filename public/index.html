@@ -11,6 +11,10 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
 
     <style>
         /* Add cursor pointer to candidate rows */
@@ -32,6 +36,13 @@
         }
          #eventList .list-group-item:hover {
             background-color: #f8f9fa;
+        }
+        
+        /* Style for paper marking table */
+        #paperMarkingBody .btn-danger {
+            --bs-btn-padding-y: .1rem;
+            --bs-btn-padding-x: .4rem;
+            --bs-btn-font-size: .8rem;
         }
     </style>
 </head>
@@ -56,6 +67,8 @@
                 <li class="nav-item" role="presentation"><button class="nav-link text-start" id="event-points-tab" data-bs-toggle="tab" data-bs-target="#event-points" type="button" role="tab"><i class="bi bi-award-fill me-2"></i>Event Points</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link text-start" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button" role="tab"><i class="bi bi-check-all me-2"></i>Attendance</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link text-start" id="event-search-tab" data-bs-toggle="tab" data-bs-target="#event-search" type="button" role="tab"><i class="bi bi-calendar-event-fill me-2"></i>Event Search</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link text-start" id="paper-marking-tab" data-bs-toggle="tab" data-bs-target="#paper-marking" type="button" role="tab"><i class="bi bi-pencil-square me-2"></i>Paper Marking</button></li>
+                
                 <hr>
                 <li class="nav-item"><a href="/api/backup/excel" class="nav-link text-start text-success"><i class="bi bi-cloud-download-fill me-2"></i>Download Backup</a></li>
             <hr></ul>
@@ -173,8 +186,20 @@
                     <div class="card-body">
                         <div class="row g-3 align-items-end">
                             <div class="col-md-3"><label for="filterGender" class="form-label">Gender</label><select id="filterGender" class="form-select"><option value="all">All Genders</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
-                            <div class="col-md-3"><label for="filterSort" class="form-label">Sort By</label><select id="filterSort" class="form-select"><option value="uid">UID</option><option value="name">Name</option><option value="total_points">Total Points</option><option value="today_points">Today's Points</option></select></div>
-                            <div class="col-md-5"><label for="filterSearch" class="form-label">Search Name/UID/Phone</label><input type="text" id="filterSearch" class="form-control" placeholder="Type to search..."></div>
+                            <div class="col-md-3">
+                                <label for="filterAttendance" class="form-label">Attendance</label>
+                                <select id="filterAttendance" class="form-select">
+                                    <option value="all">All Students</option>
+                                    <option value="day1">Attended Day 1</option>
+                                    <option value="day2">Attended Day 2</option>
+                                    <option value="day3">Attended Day 3</option>
+                                    <option value="day4">Attended Day 4</option>
+                                    <option value="day5">Attended Day 5</option>
+                                    <option value="max">Attended Max (Day 1-3)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2"><label for="filterSort" class="form-label">Sort By</label><select id="filterSort" class="form-select"><option value="uid">UID</option><option value="name">Name</option><option value="total_points">Total Points</option><option value="today_points">Today's Points</option></select></div>
+                            <div class="col-md-3"><label for="filterSearch" class="form-label">Search Name/UID/Phone</label><input type="text" id="filterSearch" class="form-control" placeholder="Type to search..."></div>
                             <div class="col-md-1 d-grid">
                                 <button class="btn btn-outline-danger" id="downloadPdfBtn" title="Download PDF">
                                     <i class="bi bi-file-earmark-pdf-fill"></i>
@@ -277,6 +302,70 @@
                 </div>
             </div>
 
+            <div class="tab-pane fade" id="paper-marking" role="tabpanel">
+                <h3 class="mb-3 pt-4">Paper Marking</h3>
+                <div class="alert-placeholder"></div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Add Entry</h5>
+                                <p class="card-subtitle mb-2 text-muted">Data is not saved in the database.</p>
+                                <form id="paperMarkingForm">
+                                    <div class="mb-3">
+                                        <label for="markUid" class="form-label">Student UID</label>
+                                        <input type="number" class="form-control" id="markUid" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="markMarks" class="form-label">Marks</label>
+                                        <input type="number" class="form-control" id="markMarks" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-2"></i>Add Entry</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Marked Entries</h5>
+                                <div class="row g-2 mb-3 align-items-end">
+                                    <div class="col-sm-6">
+                                        <label for="filterMarkUid" class="form-label">Filter by UID</label>
+                                        <input type="text" class="form-control" id="filterMarkUid" placeholder="Type UID to filter...">
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <label for="filterMarkSort" class="form-label">Sort By</label>
+                                        <select id="filterMarkSort" class="form-select">
+                                            <option value="marks">Highest Marks</option>
+                                            <option value="uid">UID</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-2 d-grid">
+                                        <button class="btn btn-outline-success" id="exportMarksBtn" title="Export to Excel">
+                                            <i class="bi bi-file-earmark-excel-fill"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="table-responsive" style="max-height: 400px;">
+                                    <table class="table table-striped table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>UID</th>
+                                                <th>Marks</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="paperMarkingBody">
+                                            <tr><td colspan="3" class="text-center text-muted">No entries yet.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div> </main>
 

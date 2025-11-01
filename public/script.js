@@ -3,6 +3,7 @@ const API_URL = '/api';
 let pointsBarChart = null; // Chart instance for bar chart
 let allCandidatesData = [];
 let filteredCandidatesData = []; // Global variable to store filtered data for PDF export
+let paperMarkingData = []; // Global variable for paper marking (not in DB)
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -326,29 +327,64 @@ document.addEventListener('DOMContentLoaded', async () => {
             const result = await response.json();
              if (!response.ok) throw new Error(result.message || `HTTP error! status: ${response.status}`);
             if (result.success) {
+                // The 'attended_days' field comes as a string "1,2,3" or null
                 allCandidatesData = result.data;
                 applyFiltersAndSort();
             } else { bodyElement.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error: ${result.message}</td></tr>`; }
         } catch (error) { bodyElement.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Failed to load candidates: ${error.message}</td></tr>`; }
     }
 
-    // applyFiltersAndSort with phone search
+    // MODIFIED applyFiltersAndSort
     function applyFiltersAndSort() {
         filteredCandidatesData = [...allCandidatesData]; // Use global variable
+        
         const genderEl = document.getElementById('filterGender');
         const sortEl = document.getElementById('filterSort');
         const searchEl = document.getElementById('filterSearch');
+        const attendanceEl = document.getElementById('filterAttendance'); // New filter
+        
         const gender = genderEl ? genderEl.value : 'all';
         const sortBy = sortEl ? sortEl.value : 'uid';
         const search = searchEl ? searchEl.value.toLowerCase().trim() : '';
+        const attendance = attendanceEl ? attendanceEl.value : 'all'; // New filter value
+
+        // Gender filter
         if (gender !== 'all') { filteredCandidatesData = filteredCandidatesData.filter(c => c.gender === gender); }
+        
+        // Search filter
         if (search) { filteredCandidatesData = filteredCandidatesData.filter(c => c.name.toLowerCase().includes(search) || c.uid.toString().includes(search) || (c.phone && c.phone.includes(search))); }
+
+        // Attendance filter
+        if (attendance !== 'all') {
+            if (attendance === 'day1') {
+                filteredCandidatesData = filteredCandidatesData.filter(c => c.attended_days && c.attended_days.split(',').includes('1'));
+            } else if (attendance === 'day2') {
+                filteredCandidatesData = filteredCandidatesData.filter(c => c.attended_days && c.attended_days.split(',').includes('2'));
+            } else if (attendance === 'day3') {
+                filteredCandidatesData = filteredCandidatesData.filter(c => c.attended_days && c.attended_days.split(',').includes('3'));
+            } else if (attendance === 'day4') {
+                filteredCandidatesData = filteredCandidatesData.filter(c => c.attended_days && c.attended_days.split(',').includes('4'));
+            } else if (attendance === 'day5') {
+                filteredCandidatesData = filteredCandidatesData.filter(c => c.attended_days && c.attended_days.split(',').includes('5'));
+            } else if (attendance === 'max') {
+                // "Max Day" means attended Day 1, 2, AND 3 (based on logs)
+                filteredCandidatesData = filteredCandidatesData.filter(c => 
+                    c.attended_days && 
+                    c.attended_days.includes('1') && 
+                    c.attended_days.includes('2') && 
+                    c.attended_days.includes('3')
+                );
+            }
+        }
+        
+        // Sort
         filteredCandidatesData.sort((a, b) => {
             if (sortBy === 'name') return a.name.localeCompare(b.name);
             if (sortBy === 'total_points') return b.total_points - a.total_points;
             if (sortBy === 'today_points') return b.today_points - a.today_points;
             return a.uid - b.uid;
         });
+        
         renderAllCandidates(filteredCandidatesData);
     }
 
@@ -392,6 +428,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (filterSortSelect) filterSortSelect.addEventListener('change', applyFiltersAndSort);
     const filterSearchInput = document.getElementById('filterSearch');
     if (filterSearchInput) filterSearchInput.addEventListener('input', applyFiltersAndSort);
+    const filterAttendanceSelect = document.getElementById('filterAttendance');
+    if (filterAttendanceSelect) filterAttendanceSelect.addEventListener('change', applyFiltersAndSort);
+
 
     // Load "All Candidates" data when tab is shown
     const allCandidatesTab = document.getElementById('all-candidates-tab');
@@ -400,25 +439,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(allCandidatesTab.classList.contains('active')) loadAllCandidates();
     }
     
-    // 6. PDF Download Button Logic
+    // 6. PDF Download Button Logic (*** CORRECTED ***)
     const downloadPdfBtn = document.getElementById('downloadPdfBtn');
     if (downloadPdfBtn) {
         downloadPdfBtn.addEventListener('click', () => {
             
-            // *** FIX HERE ***
-            // Check if jspdf and its properties exist before trying to access them
-            if (typeof jspdf === 'undefined' || 
-                typeof jspdf.jsPDF === 'undefined' || 
-                typeof jspdf.plugin === 'undefined' || 
-                typeof jspdf.plugin.autotable === 'undefined') {
-                
-                showAlert('all-candidates', 'PDF library not loaded. Please refresh.', false, true);
+            // Check if the global objects from the scripts are loaded
+            if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+                showAlert('all-candidates', 'PDF library (jsPDF) not loaded. Please refresh.', false, true);
                 return;
             }
-            // *** END FIX ***
             
-            const { jsPDF } = jspdf;
-            const doc = new jsPDF();
+            // Correct way to instantiate
+            const doc = new window.jspdf.jsPDF();
+
+            // *** NEW: Check for the autotable plugin on the instance ***
+            if (typeof doc.autoTable === 'undefined') {
+                showAlert('all-candidates', 'PDF Table plugin (autoTable) not loaded. Please refresh.', false, true);
+                return;
+            }
     
             const title = 'Student List';
             const head = [['UID', 'Name', 'Age', 'Phone', 'Gender', "Today's", 'Total']];
@@ -613,6 +652,191 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     
+    // --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    // 9. Paper Marking Tab Logic (*** CORRECTED ***)
+    
+    const paperMarkingTab = document.getElementById('paper-marking-tab');
+    const paperMarkingForm = document.getElementById('paperMarkingForm');
+    const paperMarkingBody = document.getElementById('paperMarkingBody');
+    const filterMarkUidInput = document.getElementById('filterMarkUid');
+    const filterMarkSort = document.getElementById('filterMarkSort');
+    const exportMarksBtn = document.getElementById('exportMarksBtn');
+
+    // Function to render the paper marking table from an array
+    function renderPaperMarkingTable(data) {
+        if (!paperMarkingBody) return;
+        paperMarkingBody.innerHTML = ''; // Clear table
+        
+        if (data.length === 0) {
+            paperMarkingBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No entries match filter.</td></tr>';
+            return;
+        }
+
+        data.forEach((entry) => {
+            paperMarkingBody.innerHTML += `
+                <tr>
+                    <td>${entry.uid}</td>
+                    <td>${entry.marks}</td>
+                    <td>
+                        <button class="btn btn-danger" data-id="${entry.id}">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    // Function to filter AND SORT, then render
+    function filterAndRenderMarks() {
+        const filterUid = filterMarkUidInput ? filterMarkUidInput.value : '';
+        const sortBy = filterMarkSort ? filterMarkSort.value : 'marks'; // Default to marks
+        
+        let filteredData = [...paperMarkingData]; // Work on a copy
+
+        if (filterUid) {
+            filteredData = filteredData.filter(e => e.uid.toString().includes(filterUid));
+        }
+
+        // Sort
+        filteredData.sort((a, b) => {
+            if (sortBy === 'marks') {
+                // Parse as numbers for correct sorting
+                return parseInt(b.marks, 10) - parseInt(a.marks, 10);
+            } else { // 'uid'
+                return parseInt(a.uid, 10) - parseInt(b.uid, 10);
+            }
+        });
+
+        renderPaperMarkingTable(filteredData);
+        return filteredData; // Return the data for the export function
+    }
+
+    // Add listener for the paper marking form
+    if (paperMarkingForm) {
+        paperMarkingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const uidInput = document.getElementById('markUid');
+            const marksInput = document.getElementById('markMarks');
+            
+            const uid = uidInput.value;
+            const marks = marksInput.value;
+
+            if (!uid || !marks) {
+                showAlert('paper-marking', 'Both UID and Marks are required.', false, true);
+                return;
+            }
+            
+            // *** NEW: Check for duplicate UID ***
+            const isDuplicate = paperMarkingData.some(entry => entry.uid === uid);
+            if (isDuplicate) {
+                showAlert('paper-marking', `Error: UID ${uid} has already been marked.`, false, true);
+                return; // Stop if duplicate
+            }
+            // *** END NEW ***
+
+            // Add to the global array with a unique ID for deletion
+            paperMarkingData.push({
+                id: Date.now(), // Unique ID for deletion
+                uid: uid,
+                marks: marks
+            });
+
+            e.target.reset(); // Reset form
+            uidInput.focus(); // Focus UID input for next entry
+            filterAndRenderMarks(); // Re-render the table (which now includes sorting)
+        });
+    }
+
+    // Add listener for the filter input
+    if (filterMarkUidInput) {
+        filterMarkUidInput.addEventListener('input', filterAndRenderMarks);
+    }
+    
+    // Add listener for the sort dropdown
+    if (filterMarkSort) {
+        filterMarkSort.addEventListener('change', filterAndRenderMarks);
+    }
+
+    // Add listener for deleting entries using event delegation
+    if (paperMarkingBody) {
+        paperMarkingBody.addEventListener('click', (e) => {
+            // Find the closest button with data-id
+            const deleteButton = e.target.closest('button[data-id]');
+            if (deleteButton) {
+                const id = parseInt(deleteButton.dataset.id, 10);
+                // Remove the item from the global array
+                paperMarkingData = paperMarkingData.filter(entry => entry.id !== id);
+                // Re-render the filtered list
+                filterAndRenderMarks();
+            }
+        });
+    }
+    
+    // *** NEW: Add listener for the export button (CORRECTED) ***
+    if (exportMarksBtn) {
+        exportMarksBtn.addEventListener('click', async () => {
+            // 1. Check if libraries are loaded (using explicit window)
+            if (typeof window.ExcelJS === 'undefined') {
+                showAlert('paper-marking', 'ExcelJS library not loaded. Please refresh and try again.', false, true);
+                return;
+            }
+            if (typeof window.saveAs === 'undefined') {
+                showAlert('paper-marking', 'FileSaver library not loaded. Please refresh and try again.', false, true);
+                return;
+            }
+            
+            // 2. Get current filtered and sorted data
+            const dataToExport = filterAndRenderMarks(); // This function now returns the filtered/sorted data
+
+            if (dataToExport.length === 0) {
+                showAlert('paper-marking', 'No data to export.', false, true);
+                return;
+            }
+
+            // 3. Create Excel file
+            try {
+                const workbook = new window.ExcelJS.Workbook();
+                workbook.creator = 'Event Dashboard';
+                workbook.created = new Date();
+                const sheet = workbook.addWorksheet('Paper Marks');
+
+                sheet.columns = [
+                    { header: 'UID', key: 'uid', width: 15 },
+                    { header: 'Marks', key: 'marks', width: 15 }
+                ];
+                
+                // Add rows (parsing marks as numbers for Excel)
+                const rows = dataToExport.map(e => ({
+                    uid: parseInt(e.uid, 10),
+                    marks: parseInt(e.marks, 10)
+                }));
+                sheet.addRows(rows); 
+
+                // 4. Generate and save
+                const buffer = await workbook.xlsx.writeBuffer();
+                const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                window.saveAs(blob, 'paper-marks.xlsx'); // Use explicit window.saveAs
+
+            } catch (error) {
+                console.error('Error exporting marks to Excel:', error);
+                showAlert('paper-marking', 'Error generating Excel file.', false, true);
+            }
+        });
+    }
+
+    // Add listener to render table when tab is shown
+    if (paperMarkingTab) {
+        paperMarkingTab.addEventListener('show.bs.tab', () => {
+            // Reset filter and render the full list
+            if (filterMarkUidInput) filterMarkUidInput.value = '';
+            if (filterMarkSort) filterMarkSort.value = 'marks'; // Reset sort
+            filterAndRenderMarks();
+            // Clear alerts
+            const placeholder = document.querySelector(`#paper-marking .alert-placeholder`);
+            if(placeholder) placeholder.innerHTML = '';
+        });
+    }
     // --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
 }); // End DOMContentLoaded

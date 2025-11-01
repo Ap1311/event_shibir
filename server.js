@@ -304,13 +304,32 @@ app.get('/api/candidates/all', requireLogin, async (req, res) => {
      let connection;
      try {
         connection = await pool.getConnection();
+        // *** CORRECTED QUERY ***
         const [rows] = await connection.execute(
-            `SELECT c.uid, c.name, c.age, c.phone, c.gender,
-             COALESCE(SUM(pl.points), 0) as total_points,
-             COALESCE(SUM(CASE WHEN DATE(pl.awarded_at) = CURDATE() THEN pl.points ELSE 0 END), 0) as today_points
-             FROM candidates c LEFT JOIN points_log pl ON c.uid = pl.candidate_uid
-             GROUP BY c.uid, c.name, c.age, c.phone, c.gender ORDER BY c.uid ASC`
+            `SELECT 
+                c.uid, c.name, c.age, c.phone, c.gender,
+                COALESCE(pl.total_points, 0) as total_points,
+                COALESCE(pl.today_points, 0) as today_points,
+                a.attended_days
+            FROM candidates c
+            LEFT JOIN (
+                SELECT 
+                    candidate_uid,
+                    SUM(points) as total_points,
+                    SUM(CASE WHEN DATE(awarded_at) = CURDATE() THEN points ELSE 0 END) as today_points
+                FROM points_log
+                GROUP BY candidate_uid
+            ) pl ON c.uid = pl.candidate_uid
+            LEFT JOIN (
+                SELECT 
+                    candidate_uid,
+                    GROUP_CONCAT(DISTINCT event_day ORDER BY event_day ASC) as attended_days
+                FROM attendance
+                GROUP BY candidate_uid
+            ) a ON c.uid = a.candidate_uid
+            ORDER BY c.uid ASC`
         );
+        // *** END CORRECTED QUERY ***
         connection.release();
         res.json({ success: true, data: rows });
      } catch (error) {
